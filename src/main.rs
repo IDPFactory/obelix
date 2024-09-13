@@ -12,15 +12,25 @@ use kube::{
 pub enum Error {}
 pub type Result<T, E = Error> = std::result::Result<T, E>;
 
-#[tokio::main]
-async fn main() -> Result<(), kube::Error> {
-    let client = Client::try_default().await?;
+async fn monitor_pods(client: Client) -> Result<(), kube::Error> {
     let pods = Api::<Pod>::all(client);
 
     Controller::new(pods.clone(), Default::default())
         .run(reconcile, error_policy, Arc::new(()))
         .for_each(|_| futures::future::ready(()))
         .await;
+
+    Ok(())
+}
+
+// async fn monitor_crossplane(client: Client) -> Result<(), kube::Error> {
+//     let crossplane:
+// }
+
+#[tokio::main]
+async fn main() -> Result<(), kube::Error> {
+    let client = Client::try_default().await?;
+    let _ = monitor_pods(client).await;
 
     Ok(())
 }
